@@ -11,16 +11,17 @@ s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 s.connect(("127.0.0.1", 9999))
 pygame.init()
 background = pygame.image.load("MAP2(1).png")
-playerSprite = pygame.image.load("player2.png")
+playerSprite = pygame.image.load("player1.png")
 playerSprite = pygame.transform.scale(playerSprite, (20, 40))
-playerSprite2 = pygame.image.load("player1.png")
-playerSprite2 = pygame.transform.scale(playerSprite2, (20, 40))
+playerSprite1 = pygame.image.load("player2.png")
+playerSprite1 = pygame.transform.scale(playerSprite1, (20, 40))
 screen = pygame.display.set_mode([1792, 1024])
 clock = pygame.time.Clock()
-pygame.display.set_caption("pygame test1")
+pygame.display.set_caption("pygame test2")
 
 second_sprite_x = 0
 second_sprite_y = 0
+
 def thread_listener():
     global second_sprite_x
     global second_sprite_y
@@ -41,7 +42,6 @@ def thread_listener():
 
 thread = threading.Thread(target=thread_listener)
 thread.start()
-
 
 
 def is_black(direction):
@@ -77,8 +77,8 @@ def is_not_black(direction):
     if direction == 'RIGHT':
         color_up = screen.get_at((character.x + width + 1, character.y))
         color_down = screen.get_at((character.x + width + 1, character.y + height + 1))
-        # print("color up", color_up)
-        # print("color down", color_down)
+        print("color up", color_up)
+        print("color down", color_down)
         return (color_up[0] > 10 or color_up[1] > 10 or color_up[2] > 10) \
                and (color_down[0] > 10 or color_down[1] > 10 or color_down[2] > 10)
 
@@ -131,13 +131,15 @@ def draw():
     rect_y = player_center_y - (height // 2)
     screen.blit(playerSprite, (rect_x, rect_y))
 
+    # myrect = pygame.draw.rect(screen, (0, 0, 255), (player_center_x, player_center_y, width, height))
+    # rect_x = player_center_x - (width // 2)
+    # rect_y = player_center_y - (height // 2)
+    screen.blit(playerSprite1, (second_sprite_x, second_sprite_y))
+    pygame.display.update()
+
     # You need to set a pivot to make the image go to center
     # you could do it to the image or create the image before and set the rect to the center to make sure you have
     # collision box which works good with the player sprite.
-
-    screen.blit(playerSprite2, (second_sprite_x, second_sprite_y))
-    pygame.display.update()
-
 
     # pygame.draw.rect(screen, (0,0,0), left_wall, 0)
     # pygame.draw.rect(screen, (0,0,0), right_wall, 0)
@@ -165,23 +167,25 @@ while True:
     pressed = pygame.key.get_pressed()
     if (pressed[pygame.K_UP] or pressed[pygame.K_w]) and not is_black('UP'):
         y -= speed
-        obj = json.dumps({"x": character.x, "y": character.y, "player": 1})
+        obj = json.dumps({"x": character.x, "y": character.y, "player": 2})
         s.send(obj.encode())
 
     if (pressed[pygame.K_RIGHT] or pressed[pygame.K_d]) and not is_black('RIGHT'):
         x += speed
-        obj = json.dumps({"x": character.x, "y": character.y, "player": 1})
+        obj = json.dumps({"x": character.x, "y": character.y, "player": 2})
         s.send(obj.encode())
 
     if (pressed[pygame.K_DOWN] or pressed[pygame.K_s]) and not is_black('DOWN'):
         y += speed
-        obj = json.dumps({"x": character.x, "y": character.y, "player": 1})
+        obj = json.dumps({"x": character.x, "y": character.y, "player": 2})
         s.send(obj.encode())
 
     if (pressed[pygame.K_LEFT] or pressed[pygame.K_a]) and not is_black('LEFT'):
         x -= speed
-        obj = json.dumps({"x": character.x, "y": character.y, "player": 1})
+        obj = json.dumps({"x": character.x, "y": character.y, "player": 2})
         s.send(obj.encode())
+
+
 
     # if pressed[pygame.K_UP] or pressed[pygame.K_w] and is_black('UP'):
     #     y -= speed
