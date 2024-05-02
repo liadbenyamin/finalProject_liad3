@@ -1,4 +1,5 @@
 import json
+import math
 
 import pygame
 import sys
@@ -19,10 +20,14 @@ screen = pygame.display.set_mode([1792, 1024])
 clock = pygame.time.Clock()
 pygame.display.set_caption("pygame test2")
 
+KILL_RADIUS = 75
+
+spawn_second_sprite = False
 second_sprite_x = 0
 second_sprite_y = 0
 
 def thread_listener():
+    global spawn_second_sprite
     global second_sprite_x
     global second_sprite_y
     while True:
@@ -30,14 +35,19 @@ def thread_listener():
         print(data)
         obj = json.loads(data)
 
-        # obj = json.loads(data)
-        second_sprite_x = obj['x']
-        second_sprite_y = obj['y']
-        print(second_sprite_x)
-        print(second_sprite_y)
-        # print(second_sprite_x)
-        # print(second_sprite_y)
-        # print(f"{player_center_x} - {player_center_y}")
+        if obj['type'] == "spawn_sprites":
+            spawn_second_sprite = True
+        elif obj['type'] == "pos_update":
+            second_sprite_x = obj['x']
+            second_sprite_y = obj['y']
+            print(second_sprite_x)
+            print(second_sprite_y)
+        elif obj['type'] == 'killed':
+            print("killed")
+            exit(0)
+        elif obj['type'] == 'win':
+            print("you win!")
+            exit(0)
 
 
 thread = threading.Thread(target=thread_listener)
@@ -134,7 +144,10 @@ def draw():
     # myrect = pygame.draw.rect(screen, (0, 0, 255), (player_center_x, player_center_y, width, height))
     # rect_x = player_center_x - (width // 2)
     # rect_y = player_center_y - (height // 2)
-    screen.blit(playerSprite1, (second_sprite_x, second_sprite_y))
+    if spawn_second_sprite:
+        screen.blit(playerSprite1, (second_sprite_x, second_sprite_y))
+
+
     pygame.display.update()
 
     # You need to set a pivot to make the image go to center
@@ -143,7 +156,7 @@ def draw():
 
     # pygame.draw.rect(screen, (0,0,0), left_wall, 0)
     # pygame.draw.rect(screen, (0,0,0), right_wall, 0)
-    pygame.display.update()
+    # pygame.display.update()
 
 
 x = screen.get_width() // 2
@@ -167,25 +180,31 @@ while True:
     pressed = pygame.key.get_pressed()
     if (pressed[pygame.K_UP] or pressed[pygame.K_w]) and not is_black('UP'):
         y -= speed
-        obj = json.dumps({"x": character.x, "y": character.y, "player": 2})
+        obj = json.dumps({"type": "pos_update", "x": character.x - 10, "y": character.y, "player": 2})
         s.send(obj.encode())
 
     if (pressed[pygame.K_RIGHT] or pressed[pygame.K_d]) and not is_black('RIGHT'):
         x += speed
-        obj = json.dumps({"x": character.x, "y": character.y, "player": 2})
+        obj = json.dumps({"type": "pos_update", "x": character.x - 10, "y": character.y, "player": 2})
         s.send(obj.encode())
 
     if (pressed[pygame.K_DOWN] or pressed[pygame.K_s]) and not is_black('DOWN'):
         y += speed
-        obj = json.dumps({"x": character.x, "y": character.y, "player": 2})
+        obj = json.dumps({"type": "pos_update", "x": character.x - 10, "y": character.y, "player": 2})
         s.send(obj.encode())
 
     if (pressed[pygame.K_LEFT] or pressed[pygame.K_a]) and not is_black('LEFT'):
         x -= speed
-        obj = json.dumps({"x": character.x, "y": character.y, "player": 2})
+        obj = json.dumps({"type": "pos_update", "x": character.x - 10, "y": character.y, "player": 2})
         s.send(obj.encode())
 
-
+    if pressed[pygame.K_SPACE]:
+        dist = math.sqrt((second_sprite_x - character.x) ** 2 + (second_sprite_y - character.y) ** 2)
+        print(f"DIST: {dist} ({'NOT' if dist > KILL_RADIUS else ''} IN RADIUS)")
+        if dist <= KILL_RADIUS:
+            obj = json.dumps({"type": "kill", "player": 1})
+            s.send(obj.encode())
+            spawn_second_sprite = False
 
     # if pressed[pygame.K_UP] or pressed[pygame.K_w] and is_black('UP'):
     #     y -= speed

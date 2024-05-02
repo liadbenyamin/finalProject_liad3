@@ -22,11 +22,21 @@ print("Listening...")
 
 # The code below is what you're looking for ############
 
-
 def client_thread(conn, port):
+    global connections
     # conn.send(str(len(connections)).encode())
     while True:
         data = conn.recv(1024)
+        obj = json.loads(data.decode())
+        if obj['type'] == 'kill':
+            for c in connections:
+                if c != conn:
+                    c.send(json.dumps({"type": "killed"}).encode())
+                    c.close()
+                    connections = [conn]
+                else:
+                    c.send(json.dumps({"type": "win"}).encode())
+                    c.close()
         print(f"received from {port}: {data}")
         if not data:
             break
@@ -46,5 +56,11 @@ while True:
     print("[-] Connected to " + addr[0] + ":" + str(addr[1]))
     thread = threading.Thread(target=client_thread, args=(conn, addr[1]))
     thread.start()
+
+    if len(connections) >= 2:
+        for con in connections:
+            obj = json.dumps({"type": "spawn_sprites"})
+            con.send(obj.encode())
+
 
 s.close()
