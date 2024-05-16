@@ -2,7 +2,7 @@ from PIL import Image
 import numpy as np
 
 def map_array():
-    image = Image.open("MAP1.png")
+    image = Image.open("../res/MAP1.png")
     input_array = np.asarray(image)
     return input_array
 

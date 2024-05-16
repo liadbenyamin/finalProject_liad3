@@ -5,7 +5,7 @@ import pygame
 import sys
 
 pygame.init()
-background = pygame.image.load("MAP1.png")
+background = pygame.image.load("../res/MAP1.png")
 screen = pygame.display.set_mode([1792,1024])
 clock = pygame.time.Clock()
 pygame.display.set_caption("pygame test1")

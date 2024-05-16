@@ -1,11 +1,12 @@
 import pygame
 import sys
-import test2
+from tests import test2
+
 # from Character import Character
 
 pygame.init()
-background = pygame.image.load("MAP1.png")
-playerSprite = pygame.image.load("player2.png")
+background = pygame.image.load("../res/MAP1.png")
+playerSprite = pygame.image.load("../res/player2.png")
 # playerSprite = pygame.transform.scale(playerSprite, (202, 100))
 screen = pygame.display.set_mode([1792,1024])
 clock = pygame.time.Clock()

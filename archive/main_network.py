@@ -8,12 +8,12 @@ import sys
 # from Character import Character
 
 pygame.init()
-background = pygame.image.load("MAP2(1).png")
+background = pygame.image.load("../res/MAP2(1).png")
 
-playerSprite = pygame.image.load("player2.png")
+playerSprite = pygame.image.load("../res/player2.png")
 playerSprite = pygame.transform.scale(playerSprite, (20, 40))
 
-playerSprite2 = pygame.image.load("player1.png")
+playerSprite2 = pygame.image.load("../res/player1.png")
 playerSprite2 = pygame.transform.scale(playerSprite2, (20, 40))
 
 screen = pygame.display.set_mode([1792,1024])
