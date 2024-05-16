@@ -16,6 +16,8 @@ playerSprite = pygame.image.load("res/player2.png")
 playerSprite = pygame.transform.scale(playerSprite, (20, 40))
 playerSprite2 = pygame.image.load("res/player1.png")
 playerSprite2 = pygame.transform.scale(playerSprite2, (20, 40))
+playerFocus = pygame.image.load("res/playerFocus.png")
+# playerFocus = pygame.transform.scale(playerFocus, (3000, 2000))
 screen = pygame.display.set_mode([1792, 1024])
 clock = pygame.time.Clock()
 pygame.display.set_caption("pygame test1")
@@ -144,6 +146,7 @@ def draw():
     # collision box which works good with the player sprite.
     if spawn_second_sprite:
         screen.blit(playerSprite2, (second_sprite_x, second_sprite_y))
+        screen.blit(playerFocus, (player_center_x - 1500, player_center_y - 1000))
 
     pygame.display.update()
 

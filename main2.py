@@ -15,6 +15,7 @@ playerSprite = pygame.image.load("res/player1.png")
 playerSprite = pygame.transform.scale(playerSprite, (20, 40))
 playerSprite1 = pygame.image.load("res/player2.png")
 playerSprite1 = pygame.transform.scale(playerSprite1, (20, 40))
+playerFocus = pygame.image.load("res/playerFocus.png")
 screen = pygame.display.set_mode([1792, 1024])
 clock = pygame.time.Clock()
 pygame.display.set_caption("pygame test2")
@@ -145,7 +146,7 @@ def draw():
     # rect_y = player_center_y - (height // 2)
     if spawn_second_sprite:
         screen.blit(playerSprite1, (second_sprite_x, second_sprite_y))
-
+        screen.blit(playerFocus, (player_center_x - 1500, player_center_y - 1000))
 
     pygame.display.update()
 
