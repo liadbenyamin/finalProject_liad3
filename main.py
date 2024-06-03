@@ -1,5 +1,6 @@
 import json
 import math
+from time import sleep
 
 import pygame
 import sys
@@ -12,12 +13,11 @@ s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 s.connect(("127.0.0.1", 9999))
 pygame.init()
 background = pygame.image.load("res/MAP2(1).png")
-playerSprite = pygame.image.load("res/player2.png")
-playerSprite = pygame.transform.scale(playerSprite, (20, 40))
-playerSprite2 = pygame.image.load("res/player1.png")
-playerSprite2 = pygame.transform.scale(playerSprite2, (20, 40))
+imposterSprite = pygame.image.load("res/player1.png")
+imposterSprite = pygame.transform.scale(imposterSprite, (20, 40))
+crewmateSprite = pygame.image.load("res/player2.png")
+crewmateSprite = pygame.transform.scale(crewmateSprite, (20, 40))
 playerFocus = pygame.image.load("res/playerFocus.png")
-# playerFocus = pygame.transform.scale(playerFocus, (3000, 2000))
 screen = pygame.display.set_mode([1792, 1024])
 clock = pygame.time.Clock()
 pygame.display.set_caption("pygame test1")
@@ -26,28 +26,63 @@ KILL_RADIUS = 75
 spawn_second_sprite = False
 second_sprite_x = 0
 second_sprite_y = 0
+role = ""
+startWalking = False
+
 
 def thread_listener():
     global spawn_second_sprite
     global second_sprite_x
     global second_sprite_y
+    global role
+
     while True:
         data = s.recv(1024).decode()
         print(data)
         obj = json.loads(data)
-        if obj['type'] == "spawn_sprites":
-            spawn_second_sprite = True
-        elif obj['type'] == "pos_update":
-            second_sprite_x = obj['x']
-            second_sprite_y = obj['y']
-            print(second_sprite_x)
-            print(second_sprite_y)
-        elif obj['type'] == 'killed':
-            print("killed")
-            exit(0)
-        elif obj['type'] == 'win':
-            print("you win!")
-            exit(0)
+
+        if data.count("}") == 1:
+            if 'type' in obj:
+                if obj['type'] == "spawn_sprites":
+                    spawn_second_sprite = True
+                elif obj['type'] == "pos_update":
+                    second_sprite_x = obj['x']
+                    second_sprite_y = obj['y']
+                    print(second_sprite_x)
+                    print(second_sprite_y)
+                elif obj['type'] == 'killed':
+                    print("killed")
+                    exit(0)
+                elif obj['type'] == 'win':
+                    print("you win!")
+                    exit(0)
+                elif obj['type'] == "role" and role == "":
+                    role = obj['role']
+                    print(role)
+        else:
+            for packet in data.split("}"):
+                if not packet == "":
+                    packet = packet + "}"
+                    print(packet)
+                    obj = json.loads(packet)
+
+                    if 'type' in obj:
+                        if obj['type'] == "spawn_sprites":
+                            spawn_second_sprite = True
+                        elif obj['type'] == "pos_update":
+                            second_sprite_x = obj['x']
+                            second_sprite_y = obj['y']
+                            print(second_sprite_x)
+                            print(second_sprite_y)
+                        elif obj['type'] == 'killed':
+                            print("killed")
+                            exit(0)
+                        elif obj['type'] == 'win':
+                            print("you win!")
+                            exit(0)
+                        elif obj['type'] == "role" and role == "":
+                            role = obj['role']
+                            print(role)
 
 
 thread = threading.Thread(target=thread_listener)
@@ -133,19 +168,27 @@ def is_not_black(direction):
 def draw():
     screen.blit(background, (0, 0))
 
-    player_center_x = x + playerSprite.get_width() // 2
-    player_center_y = y + playerSprite.get_height() // 2
+    player_center_x = x + crewmateSprite.get_width() // 2
+    player_center_y = y + crewmateSprite.get_height() // 2
 
     # myrect = pygame.draw.rect(screen, (0, 0, 255), (player_center_x, player_center_y, width, height))
     rect_x = player_center_x - (width // 2)
     rect_y = player_center_y - (height // 2)
-    screen.blit(playerSprite, (rect_x, rect_y))
+
+    if role == "imposter":
+        screen.blit(imposterSprite, (rect_x, rect_y))
+        if spawn_second_sprite:
+            screen.blit(crewmateSprite, (second_sprite_x, second_sprite_y))
+    else:
+        screen.blit(crewmateSprite, (rect_x, rect_y))
+        if spawn_second_sprite:
+            screen.blit(imposterSprite, (second_sprite_x, second_sprite_y))
 
     # You need to set a pivot to make the image go to center
     # you could do it to the image or create the image before and set the rect to the center to make sure you have
     # collision box which works good with the player sprite.
-    if spawn_second_sprite:
-        screen.blit(playerSprite2, (second_sprite_x, second_sprite_y))
+
+    if startWalking:
         screen.blit(playerFocus, (player_center_x - 1500, player_center_y - 1000))
 
     pygame.display.update()
@@ -157,7 +200,7 @@ def draw():
 
 x = screen.get_width() // 2
 y = screen.get_height() // 2
-speed = 1
+speed = 2
 # cube size
 width = 40
 height = 40
@@ -177,44 +220,47 @@ while True:
     if (pressed[pygame.K_UP] or pressed[pygame.K_w]) and not is_black('UP'):
         y -= speed
         obj = json.dumps({"type": "pos_update", "x": character.x - 10, "y": character.y, "player": 1})
-        s.send(obj.encode())
+        s.sendall(obj.encode())
+        startWalking = True
 
     if (pressed[pygame.K_RIGHT] or pressed[pygame.K_d]) and not is_black('RIGHT'):
         x += speed
         obj = json.dumps({"type": "pos_update", "x": character.x - 10, "y": character.y, "player": 1})
-        s.send(obj.encode())
+        s.sendall(obj.encode())
+        startWalking = True
 
     if (pressed[pygame.K_DOWN] or pressed[pygame.K_s]) and not is_black('DOWN'):
         y += speed
         obj = json.dumps({"type": "pos_update", "x": character.x - 10, "y": character.y, "player": 1})
-        s.send(obj.encode())
+        s.sendall(obj.encode())
+        startWalking = True
 
     if (pressed[pygame.K_LEFT] or pressed[pygame.K_a]) and not is_black('LEFT'):
         x -= speed
         obj = json.dumps({"type": "pos_update", "x": character.x - 10, "y": character.y, "player": 1})
-        s.send(obj.encode())
+        s.sendall(obj.encode())
+        startWalking = True
 
     if pressed[pygame.K_SPACE]:
         dist = math.sqrt((second_sprite_x - character.x) ** 2 + (second_sprite_y - character.y) ** 2)
         print(f"DIST: {dist} ({'NOT' if dist > KILL_RADIUS else ''} IN RADIUS)")
         if dist <= KILL_RADIUS:
             obj = json.dumps({"type": "kill", "player": 1})
-            s.send(obj.encode())
+            s.sendall(obj.encode())
             spawn_second_sprite = False
-
 
     # if pressed[pygame.K_UP] or pressed[pygame.K_w] and is_black('UP'):
     #     y -= speed
-    #     s.send("pressUP".encode())
+    #     s.sendall("pressUP".encode())
     # if (pressed[pygame.K_RIGHT] or pressed[pygame.K_d]) and is_black('RIGHT'):
     #     x += speed
-    #     s.send("pressRIGHT".encode())
+    #     s.sendall("pressRIGHT".encode())
     # if pressed[pygame.K_DOWN] or pressed[pygame.K_s] and is_black('DOWN'):
     #     y += speed
-    #     s.send("pressDOWN".encode())
+    #     s.sendall("pressDOWN".encode())
     # if (pressed[pygame.K_LEFT] or pressed[pygame.K_a]) and is_black('LEFT'):
     #     x -= speed
-    #     s.send("pressLEFT".encode())
+    #     s.sendall("pressLEFT".encode())
 
     draw()
     clock.tick(60)
