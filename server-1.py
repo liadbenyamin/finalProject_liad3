@@ -32,11 +32,11 @@ def client_thread(conn, port):
             for c in connections:
                 if c != conn:
                     c.sendall(json.dumps({"type": "killed"}).encode())
-                    c.close()
+                    # c.close()
                     connections = [conn]
                 else:
                     c.sendall(json.dumps({"type": "win"}).encode())
-                    c.close()
+                    # c.close()
 
         print(f"received from {port}: {data}")
         if not data:
