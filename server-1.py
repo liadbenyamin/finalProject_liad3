@@ -9,7 +9,7 @@ PORT = 9999  # arbitrary non privileged port
 # data = ""
 # list of all connections (socket)
 connections = []
-# create server socket
+# create server socket over TCP protocol
 s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 print("[-] Socket Created")
 
@@ -68,6 +68,6 @@ while True:
         sleep(0.5)
         imposter_index = random.randint(0, 1)
         connections[imposter_index].sendall(json.dumps({"type": "role", "role": "imposter"}).encode())
-        connections[1 - imposter_index].sendall(json.dumps({"type": "role", "role": "crewmate"}).encode())
+        connections[1 - imposter_index].sendall(json.dumps({"type": "role", "role": "runner"}).encode())
 
 s.close()

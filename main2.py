@@ -5,16 +5,14 @@ import sys
 import socket
 import threading
 
-# from Character import Character
-
 s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 s.connect(("127.0.0.1", 9999))
 pygame.init()
 background = pygame.image.load("res/MAP2(1).png")
 imposterSprite = pygame.image.load("res/player1.png")
 imposterSprite = pygame.transform.scale(imposterSprite, (20, 40))
-crewmateSprite = pygame.image.load("res/player2.png")
-crewmateSprite = pygame.transform.scale(crewmateSprite, (20, 40))
+runnerSprite = pygame.image.load("res/player2.png")
+runnerSprite = pygame.transform.scale(runnerSprite, (20, 40))
 playerFocus = pygame.image.load("res/playerFocus.png")
 screen = pygame.display.set_mode([1792, 1024])
 clock = pygame.time.Clock()
@@ -85,8 +83,6 @@ def is_black(direction):
     if direction == 'DOWN':
         color_left = screen.get_at((character.x, character.y + 40 + 1))
         color_right = screen.get_at((character.x + 10 - 2, character.y + 44 - 2))
-        # print("right", color_right)
-        # print("left", color_left)
         return (color_left[0] < 5 and color_left[1] < 5 and color_left[2] < 5) \
                or (color_right[0] < 5 and color_right[1] < 5 and color_right[2] > 10)
 
@@ -122,42 +118,22 @@ def is_not_black(direction):
         return (color_left[0] > 10 or color_left[1] > 10 or color_left[2] > 10) \
                and (color_right[0] > 10 or color_right[1] > 10 or color_right[2] > 10)
 
-    # if direction == 'LEFT':
-    #     color = screen.get_at((character.x -1 , character.y))
-    #     print(color)
-    #     return color[0] > 10 or color[1] > 10 or color[2] > 10
-    #
-    # if direction == 'UP':
-    #     color = screen.get_at((character.x , character.y+1))
-    #     print(color)
-    #     return color[0] > 10 or color[1] > 10 or color[2] > 10
-    #
-    # if direction == 'DOWN':
-    #     color = screen.get_at((character.x , character.y + height))
-    #     print(color)
-    #     return color[0] > 10 or color[1] > 10 or color[2] > 10
-
 
 def draw():
     screen.blit(background, (0, 0))
 
-    player_center_x = x + crewmateSprite.get_width() // 2
-    player_center_y = y + crewmateSprite.get_height() // 2
+    player_center_x = x + runnerSprite.get_width() // 2
+    player_center_y = y + runnerSprite.get_height() // 2
 
-    # myrect = pygame.draw.rect(screen, (0, 0, 255), (player_center_x, player_center_y, width, height))
     rect_x = player_center_x - (width // 2)
     rect_y = player_center_y - (height // 2)
-
-    # myrect = pygame.draw.rect(screen, (0, 0, 255), (player_center_x, player_center_y, width, height))
-    # rect_x = player_center_x - (width // 2)
-    # rect_y = player_center_y - (height // 2)
 
     if role == "imposter":
         screen.blit(imposterSprite, (rect_x, rect_y))
         if spawn_second_sprite:
-            screen.blit(crewmateSprite, (second_sprite_x, second_sprite_y))
+            screen.blit(runnerSprite, (second_sprite_x, second_sprite_y))
     else:
-        screen.blit(crewmateSprite, (rect_x, rect_y))
+        screen.blit(runnerSprite, (rect_x, rect_y))
         if spawn_second_sprite:
             screen.blit(imposterSprite, (second_sprite_x, second_sprite_y))
 
@@ -165,14 +141,6 @@ def draw():
         screen.blit(playerFocus, (player_center_x - 1500, player_center_y - 1000))
 
     pygame.display.update()
-
-    # You need to set a pivot to make the image go to center
-    # you could do it to the image or create the image before and set the rect to the center to make sure you have
-    # collision box which works good with the player sprite.
-
-    # pygame.draw.rect(screen, (0,0,0), left_wall, 0)
-    # pygame.draw.rect(screen, (0,0,0), right_wall, 0)
-    # pygame.display.update()
 
 
 x = screen.get_width() // 2
@@ -184,7 +152,6 @@ height = 40
 
 left_wall = pygame.Rect(-2, 0, 2, 600)
 right_wall = pygame.Rect(1201, 0, 2, 600)
-
 
 while True:
     for event in pygame.event.get():
