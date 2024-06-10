@@ -1,5 +1,7 @@
 import json
 import math
+import os
+import sys
 from time import sleep
 import pygame
 import socket
@@ -131,9 +133,13 @@ class Game:
                         print(self.second_sprite_x)
                         print(self.second_sprite_y)
                     elif obj['type'] == 'killed':
-                        EndScreens.Dead()
+                        # self.soc.shutdown(socket.SHUT_RDWR)
+                        # self.soc.close()
+                        os.system("python EndScreens.py lose")
+                        exit(0)
                     elif obj['type'] == 'win':
-                        EndScreens.Win()
+                        os.system("python EndScreens.py win")
+                        exit(0)
                     elif obj['type'] == "role" and self.role == "":
                         self.role = obj['role']
                         print(self.role)
@@ -155,11 +161,13 @@ class Game:
                                 print(self.second_sprite_x)
                                 print(self.second_sprite_y)
                             elif obj['type'] == 'killed':
-                                print("killed")
-                                exit(0)
+                                # self.soc.shutdown(socket.SHUT_RDWR)
+                                # self.soc.close()
+                                os.system("python EndScreens.py lose")
+                                sys.exit()
                             elif obj['type'] == 'win':
-                                print("you win!")
-                                exit(0)
+                                os.system("python EndScreens.py win")
+                                sys.exit()
                             elif obj['type'] == "role" and self.role == "":
                                 role = obj['role']
                                 print(role)
