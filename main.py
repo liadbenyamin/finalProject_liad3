@@ -63,7 +63,8 @@ class Game:
         while True:
             for event in pygame.event.get():
                 if event.type == pygame.QUIT:
-                    break
+
+                    self.soc.close()
                     exit()
                 elif event.type == pygame.USEREVENT and self.startFocus and self.timer >= 0:
                     self.timer -= 1
@@ -227,7 +228,7 @@ class Game:
         player_center_x = self.x + self.runnerSprite.get_width() // 2
         player_center_y = self.y + self.runnerSprite.get_height() // 2
 
-        rect_x = player_center_x - (self.width // 2)
+        rect_x = player_center_x - (self.width // 2) - 20
         rect_y = player_center_y - (self.height // 2)
 
         if self.role == "imposter":
