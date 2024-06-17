@@ -1,3 +1,5 @@
+import os
+
 import pygame
 import sys
 
@@ -6,10 +8,12 @@ import main
 WHITE = (255, 255, 255)
 BLACK = (0, 0, 0)
 
+
 class Win:
     WIDTH = 1792
     HEIGHT = 1024
     blink = True
+
     def __init__(self):
         pygame.init()
 
@@ -44,7 +48,8 @@ class Win:
                     pressed = pygame.key.get_pressed()
 
                     if pressed[pygame.K_SPACE]:
-                        exit()
+                        self.screen = pygame.display.set_mode((1, 1), flags=pygame.HIDDEN)
+                        os.system("python HomePage.py")
 
                 elif event.type == pygame.USEREVENT:
                     self.blink = not self.blink
@@ -57,6 +62,7 @@ class Lose:
     WIDTH = 1792
     HEIGHT = 1024
     blink = True
+
     def __init__(self):
         pygame.init()
 
@@ -91,15 +97,19 @@ class Lose:
                     pressed = pygame.key.get_pressed()
 
                     if pressed[pygame.K_SPACE]:
-                        exit()
+                        os.system("python HomePage.py")
+                        self.screen = pygame.display.set_mode((1, 1), flags=pygame.HIDDEN)
 
                 elif event.type == pygame.USEREVENT:
                     self.blink = not self.blink
 
             pygame.display.update()
             clock.tick(60)
+
+
 if len(sys.argv) > 1:
     if sys.argv[1] == "win":
         Win()
+
     elif sys.argv[1] == "lose":
         Lose()

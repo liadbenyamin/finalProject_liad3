@@ -1,5 +1,7 @@
+import os
 import random
 import socket
+import sys
 import threading
 import json
 from time import sleep
@@ -11,6 +13,7 @@ PORT = 9999  # arbitrary non privileged port
 connections = []
 # create server socket over TCP protocol
 s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+
 print("[-] Socket Created")
 
 s.bind((HOST, PORT))
@@ -25,18 +28,27 @@ print("Listening...")
 def client_thread(conn, port):
     global connections
     # conn.sendall(str(len(connections)).encode())
+
     while True:
         data = conn.recv(1024)
         obj = json.loads(data.decode())
+
         if obj['type'] == 'kill':
             for c in connections:
                 if c != conn:
                     c.sendall(json.dumps({"type": "killed"}).encode())
                     # c.close()
-                    connections = [conn]
+                    # connections = [conn]
+                    c.close()
                 else:
                     c.sendall(json.dumps({"type": "win"}).encode())
-                    # c.close()
+                    c.close()
+        elif obj['type'] == 'reset':
+            s.close()
+            os.system("python server-1.py")
+            for con in connections:
+                con.shutdown(socket.SHUT_RDWR)
+                con.close()
 
         print(f"received from {port}: {data}")
         if not data:

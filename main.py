@@ -7,8 +7,6 @@ import pygame
 import socket
 import threading
 
-import EndScreens
-
 
 class Game:
     soc = None
@@ -34,6 +32,8 @@ class Game:
     # Fonts
     roleHeaderFont = None
 
+    running = True
+
     def __init__(self):
         self.soc = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         self.soc.connect(("127.0.0.1", 9999))
@@ -56,20 +56,33 @@ class Game:
         width = 40
         height = 40
 
+        print(f"PID: {os.getpid()}")
+
         thread = threading.Thread(target=self.thread_listener)
         thread.start()
 
         # left_wall = pygame.Rect(-2, 0, 2, 600)
         # right_wall = pygame.Rect(1201, 0, 2, 600)
 
-        while True:
+        while self.running:
             for event in pygame.event.get():
                 if event.type == pygame.QUIT:
+                    self.running = False
+                    pygame.event.get()
+                    pygame.quit()
 
-                    self.soc.close()
-                    exit()
-                elif event.type == pygame.USEREVENT and self.startFocus and self.timer >= 0:
-                    self.timer -= 1
+                elif event.type == pygame.USEREVENT and self.startFocus:
+                    if self.timer > 0:
+                        self.timer -= 1
+                    else:
+                        self.soc.sendall(json.dumps({"type": "reset"}).encode())
+                        self.soc.close()
+                        self.screen = pygame.display.set_mode((1, 1), flags=pygame.HIDDEN)
+
+                        if self.role == 'imposter':
+                            os.system("python EndScreens.py lose")
+                        else:
+                            os.system("python EndScreens.py win")
 
             self.character = pygame.Rect(self.x, self.y, width, height)
             pressed = pygame.key.get_pressed()
@@ -102,7 +115,8 @@ class Game:
                 self.startFocus = True
 
             if pressed[pygame.K_SPACE] and self.role == "imposter":
-                self.dist = math.sqrt((self.second_sprite_x - self.character.x) ** 2 + (self.second_sprite_y - self.character.y) ** 2)
+                self.dist = math.sqrt(
+                    (self.second_sprite_x - self.character.x) ** 2 + (self.second_sprite_y - self.character.y) ** 2)
                 print(f"DIST: {self.dist} ({'NOT' if self.dist > self.KILL_RADIUS else ''} IN RADIUS)")
                 if self.dist <= self.KILL_RADIUS:
                     obj = json.dumps({"type": "kill"})
@@ -133,44 +147,42 @@ class Game:
                         print(self.second_sprite_x)
                         print(self.second_sprite_y)
                     elif obj['type'] == 'killed':
-                        # self.soc.shutdown(socket.SHUT_RDWR)
-                        # self.soc.close()
-                        os.system("python EndScreens.py lose")
-                        exit(0)
+                        # os.system("python EndScreens.py lose")
+                        self.running = False
+                        pygame.quit()
                     elif obj['type'] == 'win':
-                        os.system("python EndScreens.py win")
-                        exit(0)
+                        # os.system("python EndScreens.py win")
+                        self.running = False
+                        pygame.quit()
                     elif obj['type'] == "role" and self.role == "":
                         self.role = obj['role']
                         print(self.role)
                     elif obj['type'] == "start_focus":
                         self.startFocus = True
             else:
-                for packet in data.split("}"):
-                    if not packet == "":
-                        packet = packet + "}"
-                        print(packet)
-                        obj = json.loads(packet)
-
-                        if 'type' in obj:
-                            if obj['type'] == "spawn_sprites":
-                                self.spawn_second_sprite = True
-                            elif obj['type'] == "pos_update":
-                                self.second_sprite_x = obj['x']
-                                second_sprite_y = obj['y']
-                                print(self.second_sprite_x)
-                                print(self.second_sprite_y)
-                            elif obj['type'] == 'killed':
-                                # self.soc.shutdown(socket.SHUT_RDWR)
-                                # self.soc.close()
-                                os.system("python EndScreens.py lose")
-                                sys.exit()
-                            elif obj['type'] == 'win':
-                                os.system("python EndScreens.py win")
-                                sys.exit()
-                            elif obj['type'] == "role" and self.role == "":
-                                role = obj['role']
-                                print(role)
+                data = data.split("{")[-1]
+                obj = json.loads(data)
+                if 'type' in obj:
+                    if obj['type'] == "spawn_sprites":
+                        self.spawn_second_sprite = True
+                    elif obj['type'] == "pos_update":
+                        self.second_sprite_x = obj['x']
+                        self.second_sprite_y = obj['y']
+                        print(self.second_sprite_x)
+                        print(self.second_sprite_y)
+                    elif obj['type'] == 'killed':
+                        # self.soc.shutdown(socket.SHUT_RDWR)
+                        # self.soc.close()
+                        # os.system("python EndScreens.py lose")
+                        exit(0)
+                    elif obj['type'] == 'win':
+                        # os.system("python EndScreens.py win")
+                        exit(0)
+                    elif obj['type'] == "role" and self.role == "":
+                        self.role = obj['role']
+                        print(self.role)
+                    elif obj['type'] == "start_focus":
+                        self.startFocus = True
 
     def is_black(self, direction):
 
@@ -235,6 +247,7 @@ class Game:
 
         player_center_x = self.x + self.runnerSprite.get_width() // 2
         player_center_y = self.y + self.runnerSprite.get_height() // 2
+        player_center_y = self.y + self.runnerSprite.get_height() // 2
 
         rect_x = player_center_x - (self.width // 2) - 20
         rect_y = player_center_y - (self.height // 2)
@@ -261,3 +274,6 @@ class Game:
         self.screen.blit(timerText, (10, 10))
 
         pygame.display.update()
+
+
+pygame.quit()
