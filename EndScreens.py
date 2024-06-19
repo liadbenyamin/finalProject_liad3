@@ -13,6 +13,7 @@ class Win:
     WIDTH = 1792
     HEIGHT = 1024
     blink = True
+    running = True
 
     def __init__(self):
         pygame.init()
@@ -29,13 +30,14 @@ class Win:
 
         pygame.time.set_timer(pygame.USEREVENT, 500)
 
-        while True:
+        while self.running:
             screen.fill((255, 255, 255))
             screen.blit(background, (0, 0))
             screen.blit(text, (self.WIDTH // 2 - text.get_width() // 2, self.HEIGHT // 2 - 300))
             screen.blit(text2, (self.WIDTH // 2 - text2.get_width() // 2, self.HEIGHT // 2))
 
             if self.blink:
+                self.running = False
                 screen.blit(text3, (self.WIDTH // 2 - text3.get_width() // 2, self.HEIGHT // 2 + 150))
             # pygame.draw.rect(screen, (0, 0, ), ())
 
@@ -62,6 +64,7 @@ class Lose:
     WIDTH = 1792
     HEIGHT = 1024
     blink = True
+    running = True
 
     def __init__(self):
         pygame.init()
@@ -78,7 +81,7 @@ class Lose:
 
         pygame.time.set_timer(pygame.USEREVENT, 500)
 
-        while True:
+        while self.running:
             screen.fill((255, 255, 255))
             screen.blit(background, (0, 0))
             screen.blit(text, (self.WIDTH // 2 - text.get_width() // 2, self.HEIGHT // 2 - 300))
@@ -90,6 +93,7 @@ class Lose:
 
             for event in pygame.event.get():
                 if event.type == pygame.QUIT:
+                    self.running = False
                     pygame.quit()
                     sys.exit()
 

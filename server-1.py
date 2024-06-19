@@ -27,35 +27,26 @@ print("Listening...")
 
 def client_thread(conn, port):
     global connections
-    # conn.sendall(str(len(connections)).encode())
 
-    while True:
+    while len(connections) > 0:
         data = conn.recv(1024)
         obj = json.loads(data.decode())
+        print(f"received from {port}: {data}")
 
-        if obj['type'] == 'kill':
-            for c in connections:
-                if c != conn:
-                    c.sendall(json.dumps({"type": "killed"}).encode())
-                    # c.close()
-                    # connections = [conn]
-                    c.close()
-                else:
-                    c.sendall(json.dumps({"type": "win"}).encode())
-                    c.close()
-        elif obj['type'] == 'reset':
+        if obj['type'] == 'reset':
             s.close()
             os.system("python server-1.py")
             for con in connections:
                 con.shutdown(socket.SHUT_RDWR)
                 con.close()
+            connections = []
 
-        print(f"received from {port}: {data}")
-        if not data:
-            break
-        for c in connections:
-            if c != conn:
-                c.sendall(data)
+        else:
+            if not data:
+                break
+            for c in connections:
+                if c != conn:
+                    c.sendall(data)
 
         # for i in range(len(connections)):
         #     reply = (colors_names[connections.index(conn)] + " " + data.decode()).encode()
